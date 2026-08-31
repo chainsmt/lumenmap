@@ -117,22 +117,22 @@ export const METHODOLOGY_SECTIONS: MethodologySection[] = [
   },
   {
     id: "active-accounts",
-    title: "Active accounts",
+    title: "Active accounts (source)",
     summary:
-      "Distinct account public keys that sourced qualifying operations in the period. Not currently a KPI card.",
+      "Distinct account public keys that sourced qualifying operations in the period.",
     unit: "accounts (distinct count)",
-    aggregation: "COUNT(DISTINCT op_source_account) for selected operation types.",
+    aggregation: "COUNT(DISTINCT op_source_account) for closed operations in-range.",
     timeBasis: "Same selected period bounds as operations.",
     source:
-      "`enriched_history_operations.op_source_account` (leaderboard queries today return top-N per type, not the full distinct set).",
+      "`enriched_history_operations.op_source_account` filtered by `closed_at`.",
     inclusions: ["Accounts that appear as operation source accounts"],
     exclusions: [
-      "Accounts that only receive payments without sourcing ops in the filtered set",
-      "Contract IDs",
+      "Accounts that only receive payments without sourcing ops",
+      "Contract IDs and muxed accounts (M...)",
     ],
     limitations: [
       "The treemap account list is top-N capped per operation type and is not the full active-account universe.",
-      "Not exposed as a dedicated KPI card yet.",
+      "Hubble lag can delay the newest hours.",
     ],
   },
   {

@@ -806,7 +806,10 @@ export function buildKpis(
 
   // Prefer the uncapped distinct active-contract count when provided so the KPI
   // is not coupled to the capped leaderboard length.
-  void activeSourceAccounts;
+  const activeWalletCount = activeSourceAccounts.reduce(
+    (sum, row) => sum + row.active_accounts,
+    0,
+  );
   const activeContractCount =
     totalActiveContracts !== undefined ? totalActiveContracts : contracts.length;
 
@@ -828,6 +831,11 @@ export function buildKpis(
       kind: "entity_count",
       unit: "count",
       value: activeContractCount,
+    },
+    activeWallets: {
+      kind: "entity_count",
+      unit: "count",
+      value: activeWalletCount,
     },
   };
 }

@@ -7,7 +7,8 @@ export type KpiMetricId =
   | "totalOps"
   | "sorobanShare"
   | "topCategory"
-  | "activeContracts";
+  | "activeContracts"
+  | "activeWallets";
 
 export interface MetricDefinition {
   id: KpiMetricId;
@@ -65,6 +66,17 @@ export const METRIC_DEFINITIONS: Record<KpiMetricId, MetricDefinition> = {
       "Currently derived from a top-200 leaderboard result, so busy periods can undercount.",
     methodologySection: "active-contracts",
     methodologyHref: methodologyPath("active-contracts"),
+  },
+  activeWallets: {
+    id: "activeWallets",
+    title: "Active Wallets",
+    definition:
+      "Distinct Stellar account public keys that sourced at least one operation in the selected period.",
+    unit: "accounts (distinct count)",
+    limitation:
+      "Counts source accounts only; receiving-side activity is tracked separately.",
+    methodologySection: "active-accounts",
+    methodologyHref: methodologyPath("active-accounts"),
   },
 };
 

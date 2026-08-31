@@ -49,6 +49,7 @@ function mockActivityDataset(period: Period): ActivityDataset {
       sorobanShare: { kind: "share", unit: "percent", value: 0 },
       topCategory: "none",
       activeContracts: { kind: "entity_count", unit: "count", value: 0 },
+      activeWallets: { kind: "entity_count", unit: "count", value: 0 },
     },
     treemaps: {
       events: {

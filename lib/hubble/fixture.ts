@@ -92,6 +92,7 @@ export function buildFixtureDataset(period: Period = "1d"): ActivityDataset {
       sorobanShare: { kind: "share", unit: "percent", value: 51 },
       topCategory: "soroban",
       activeContracts: { kind: "entity_count", unit: "count", value: 2 },
+      activeWallets: { kind: "entity_count", unit: "count", value: 1500 },
     },
     treemaps: {
       events: {

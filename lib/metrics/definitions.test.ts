@@ -16,6 +16,7 @@ describe("dashboard metric definitions", () => {
   it("defines every selectable KPI metric", () => {
     assert.deepEqual(DASHBOARD_METRIC_IDS.sort(), [
       "activeContracts",
+      "activeWallets",
       "sorobanShare",
       "topCategory",
       "totalOps",
