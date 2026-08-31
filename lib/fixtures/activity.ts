@@ -1,5 +1,6 @@
 import { buildAllTreemaps, buildKpis } from "@/lib/entities/build-treemap";
 import { getFixtureRawActivity } from "@/lib/fixtures/raw-data";
+import { getFixtureTimeseries } from "@/lib/fixtures/timeseries";
 import { buildActivityMetricProvenance } from "@/lib/metrics/provenance";
 import { resolvePeriod } from "@/lib/periods";
 import type { ActivityDataset, Period } from "@/lib/types";
@@ -41,6 +42,7 @@ export function getFixtureActivityData(period: Period): ActivityDataset {
     },
     usdcCategories: [],
     usdcAccounts: [],
+    timeseries: getFixtureTimeseries(period),
     metricProvenance: buildActivityMetricProvenance(),
   };
 }
