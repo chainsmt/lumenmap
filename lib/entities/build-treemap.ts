@@ -795,6 +795,7 @@ export function buildKpis(
   contracts: ContractRow[],
   activeSourceAccounts: ActiveSourceAccountsRow[] = [],
   totalActiveContracts?: number,
+  activeDestinationCount = 0,
 ): ActivityKpis {
   const totalOps = categories.reduce((sum, row) => sum + row.op_count, 0);
   const groupTotals = getGroupTotals(categories, "ops");
@@ -828,6 +829,11 @@ export function buildKpis(
       kind: "entity_count",
       unit: "count",
       value: activeContractCount,
+    },
+    activeDestinationAccounts: {
+      kind: "entity_count",
+      unit: "count",
+      value: activeDestinationCount,
     },
   };
 }

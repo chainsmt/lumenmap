@@ -1,5 +1,6 @@
 import { buildAllTreemaps, buildKpis } from "@/lib/entities/build-treemap";
 import { getFixtureRawActivity } from "@/lib/fixtures/raw-data";
+import { getFixtureActiveDestinationCount } from "@/lib/fixtures/destination-kpi";
 import { buildActivityMetricProvenance } from "@/lib/metrics/provenance";
 import { resolvePeriod } from "@/lib/periods";
 import type { ActivityDataset, Period } from "@/lib/types";
@@ -30,7 +31,13 @@ export function getFixtureActivityData(period: Period): ActivityDataset {
     accounts: raw.accounts,
     sorobanFunctions: raw.sorobanFunctions,
     sorobanFunctionContracts: raw.sorobanFunctionContracts,
-    kpis: buildKpis(raw.categories, raw.contracts),
+    kpis: buildKpis(
+      raw.categories,
+      raw.contracts,
+      [],
+      raw.contracts.length,
+      getFixtureActiveDestinationCount(period),
+    ),
     treemaps: buildAllTreemaps(raw),
     usdcPaymentVolume: {
       amount: 0,

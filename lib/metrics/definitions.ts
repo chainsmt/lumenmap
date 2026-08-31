@@ -7,7 +7,8 @@ export type KpiMetricId =
   | "totalOps"
   | "sorobanShare"
   | "topCategory"
-  | "activeContracts";
+  | "activeContracts"
+  | "activeDestinationAccounts";
 
 export interface MetricDefinition {
   id: KpiMetricId;
@@ -65,6 +66,17 @@ export const METRIC_DEFINITIONS: Record<KpiMetricId, MetricDefinition> = {
       "Currently derived from a top-200 leaderboard result, so busy periods can undercount.",
     methodologySection: "active-contracts",
     methodologyHref: methodologyPath("active-contracts"),
+  },
+  activeDestinationAccounts: {
+    id: "activeDestinationAccounts",
+    title: "Active Destinations",
+    definition:
+      "Distinct classic (G...) accounts that received qualifying payment, path-payment, account-creation, or merge operations in the period.",
+    unit: "accounts (distinct count)",
+    limitation:
+      "Destination semantics differ from source wallets; contract recipients and muxed accounts are excluded.",
+    methodologySection: "active-destination-accounts",
+    methodologyHref: methodologyPath("active-destination-accounts"),
   },
 };
 

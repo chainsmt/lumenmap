@@ -164,6 +164,7 @@ export function createSearchFixtures(): ActivityDataset {
         unit: "count",
         value: contracts.length,
       },
+      activeDestinationAccounts: { kind: "entity_count", unit: "count", value: 35 },
     },
     treemaps,
     usdcPaymentVolume: {

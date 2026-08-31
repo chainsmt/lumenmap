@@ -11,6 +11,7 @@ export type MethodologySectionId =
   | "payment-volume"
   | "tvl"
   | "active-accounts"
+  | "active-destination-accounts"
   | "active-contracts"
   | "soroban-share"
   | "top-category"
@@ -133,6 +134,29 @@ export const METHODOLOGY_SECTIONS: MethodologySection[] = [
     limitations: [
       "The treemap account list is top-N capped per operation type and is not the full active-account universe.",
       "Not exposed as a dedicated KPI card yet.",
+    ],
+  },
+  {
+    id: "active-destination-accounts",
+    title: "Active destination accounts",
+    summary:
+      "Distinct classic accounts that received qualifying payment, path-payment, account-creation, or merge operations in the period.",
+    unit: "accounts (distinct count)",
+    aggregation:
+      "COUNT(DISTINCT destination_account) across payment-style operation types.",
+    timeBasis: "Same selected period bounds as operations.",
+    source:
+      "`enriched_history_operations` destination fields (`details.to`, `details.new_account`, `details.into`) for selected types.",
+    inclusions: [
+      "G... accounts receiving payment, path payment, create_account, or account_merge",
+    ],
+    exclusions: [
+      "Source-only wallets that never received qualifying ops",
+      "Contract IDs, empty identifiers, and muxed accounts",
+    ],
+    limitations: [
+      "Destination semantics differ from source active wallets; do not sum the two KPIs as a deduplicated user count.",
+      "Only the documented operation types contribute to the destination count.",
     ],
   },
   {
