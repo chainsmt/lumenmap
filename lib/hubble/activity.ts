@@ -321,8 +321,10 @@ export function buildTimeseries(
   end: Date,
   rawRows: TimeseriesRawRow[],
   now = new Date(),
+  granularityOverride?: "hour" | "day",
 ): ActivityTimeseries {
-  const granularity = period === "1d" ? "hour" : "day";
+  const granularity =
+    granularityOverride ?? (period === "1d" ? "hour" : "day");
   const buckets: TimeseriesBucket[] = [];
 
   const lookup = new Map<string, { tx_count: number; op_count: number }>();
