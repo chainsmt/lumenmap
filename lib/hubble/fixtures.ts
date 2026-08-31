@@ -36,8 +36,6 @@ function toVisualization(
           sorobanShare: { kind: "share", unit: "percent", value: 0 },
           topCategory: "—",
           activeContracts: { kind: "entity_count", unit: "count", value: 0 },
-          activeWallets: { kind: "entity_count", unit: "count", value: 0 },
-          activeDestinationAccounts: { kind: "entity_count", unit: "count", value: 0 },
         }
       : data.kpis,
     treemaps,

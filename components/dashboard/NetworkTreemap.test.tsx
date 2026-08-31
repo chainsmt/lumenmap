@@ -68,8 +68,6 @@ vi.mock("@/components/dashboard/DashboardProvider", () => ({
         sorobanShare: { kind: "share", unit: "percent", value: 12.3 },
         topCategory: "soroban",
         activeContracts: { kind: "entity_count", unit: "count", value: 5 },
-        activeWallets: { kind: "entity_count", unit: "count", value: 12 },
-        activeDestinationAccounts: { kind: "entity_count", unit: "count", value: 9 },
       },
     },
     isLoading: false,

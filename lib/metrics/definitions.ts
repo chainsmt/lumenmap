@@ -7,9 +7,7 @@ export type KpiMetricId =
   | "totalOps"
   | "sorobanShare"
   | "topCategory"
-  | "activeContracts"
-  | "activeWallets"
-  | "activeDestinationAccounts";
+  | "activeContracts";
 
 export interface MetricDefinition {
   id: KpiMetricId;
@@ -61,34 +59,12 @@ export const METRIC_DEFINITIONS: Record<KpiMetricId, MetricDefinition> = {
     id: "activeContracts",
     title: "Active Contracts",
     definition:
-      "Count of Soroban contracts with fee / invoke activity in the period, as returned by the contract activity query.",
+      "Count of Soroban contracts with activity returned for the period contract query.",
     unit: "contracts (count)",
     limitation:
-      "The current KPI uses the leaderboard result length, which is capped (top 200), so busy periods can undercount.",
+      "Currently derived from a top-200 leaderboard result, so busy periods can undercount.",
     methodologySection: "active-contracts",
     methodologyHref: methodologyPath("active-contracts"),
-  },
-  activeWallets: {
-    id: "activeWallets",
-    title: "Active Wallets",
-    definition:
-      "Distinct Stellar account public keys that sourced at least one operation in the selected period.",
-    unit: "accounts (distinct count)",
-    limitation:
-      "Counts source accounts only; receiving-side activity is tracked separately.",
-    methodologySection: "active-accounts",
-    methodologyHref: methodologyPath("active-accounts"),
-  },
-  activeDestinationAccounts: {
-    id: "activeDestinationAccounts",
-    title: "Active Destinations",
-    definition:
-      "Distinct classic (G...) accounts that received qualifying payment, path-payment, account-creation, or merge operations in the period.",
-    unit: "accounts (distinct count)",
-    limitation:
-      "Destination semantics differ from source wallets; contract recipients and muxed accounts are excluded.",
-    methodologySection: "active-destination-accounts",
-    methodologyHref: methodologyPath("active-destination-accounts"),
   },
 };
 

@@ -11,7 +11,6 @@ export type MethodologySectionId =
   | "payment-volume"
   | "tvl"
   | "active-accounts"
-  | "active-destination-accounts"
   | "active-contracts"
   | "soroban-share"
   | "top-category"
@@ -118,45 +117,22 @@ export const METHODOLOGY_SECTIONS: MethodologySection[] = [
   },
   {
     id: "active-accounts",
-    title: "Active accounts (source)",
+    title: "Active accounts",
     summary:
-      "Distinct account public keys that sourced qualifying operations in the period.",
+      "Distinct account public keys that sourced qualifying operations in the period. Not currently a KPI card.",
     unit: "accounts (distinct count)",
-    aggregation: "COUNT(DISTINCT op_source_account) for closed operations in-range.",
+    aggregation: "COUNT(DISTINCT op_source_account) for selected operation types.",
     timeBasis: "Same selected period bounds as operations.",
     source:
-      "`enriched_history_operations.op_source_account` filtered by `closed_at`.",
+      "`enriched_history_operations.op_source_account` (leaderboard queries today return top-N per type, not the full distinct set).",
     inclusions: ["Accounts that appear as operation source accounts"],
     exclusions: [
-      "Accounts that only receive payments without sourcing ops",
-      "Contract IDs and muxed accounts (M...)",
+      "Accounts that only receive payments without sourcing ops in the filtered set",
+      "Contract IDs",
     ],
     limitations: [
       "The treemap account list is top-N capped per operation type and is not the full active-account universe.",
-      "Hubble lag can delay the newest hours.",
-    ],
-  },
-  {
-    id: "active-destination-accounts",
-    title: "Active destination accounts",
-    summary:
-      "Distinct classic accounts that received qualifying payment, path-payment, account-creation, or merge operations in the period.",
-    unit: "accounts (distinct count)",
-    aggregation:
-      "COUNT(DISTINCT destination_account) across payment-style operation types.",
-    timeBasis: "Same selected period bounds as operations.",
-    source:
-      "`enriched_history_operations` destination fields (`details.to`, `details.new_account`, `details.into`) for selected types.",
-    inclusions: [
-      "G... accounts receiving payment, path payment, create_account, or account_merge",
-    ],
-    exclusions: [
-      "Source-only wallets that never received qualifying ops",
-      "Contract IDs, empty identifiers, and muxed accounts",
-    ],
-    limitations: [
-      "Destination semantics differ from source active wallets; do not sum the two KPIs as a deduplicated user count.",
-      "Only the documented operation types contribute to the destination count.",
+      "Not exposed as a dedicated KPI card yet.",
     ],
   },
   {

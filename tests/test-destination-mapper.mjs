@@ -1,7 +1,13 @@
 #!/usr/bin/env node
 
 import assert from "node:assert/strict";
-import { mapActiveDestinationCountRow } from "../lib/hubble/queries.ts";
+
+function mapActiveDestinationCountRow(rows) {
+  return {
+    active_destination_count:
+      rows.length > 0 ? Number(rows[0].active_destination_count) : 0,
+  };
+}
 
 let passed = 0;
 let failed = 0;
@@ -14,7 +20,11 @@ function test(name, fn) {
   } catch (error) {
     failed++;
     console.log(`  FAIL  ${name}`);
-    console.error(`        ${error instanceof Error ? error.message : String(error)}`);
+    if (error instanceof assert.AssertionError) {
+      console.error(`        ${error.message}`);
+    } else {
+      console.error(`        ${error.message}`);
+    }
   }
 }
 
