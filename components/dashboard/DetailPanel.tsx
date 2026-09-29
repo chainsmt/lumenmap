@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,12 +10,20 @@ import { StellarExpertLink } from "@/components/dashboard/StellarExpertLink";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDashboard } from "@/components/dashboard/DashboardProvider";
 import { isEligibleAddress } from "@/lib/clipboard";
+import { buildContractFunctionBreakdown } from "@/lib/entities/contract-function-breakdown";
 import { getMetricUnit } from "@/lib/metrics/units";
 import { formatNumber, formatPercent } from "@/lib/utils";
 
 export function DetailPanel() {
-  const { selectedNode, setSelectedNode, data, metric, isLoading } =
-    useDashboard();
+  const {
+    selectedNode,
+    setSelectedNode,
+    data,
+    metric,
+    isLoading,
+    setTreemapView,
+    setActiveLevelPath,
+  } = useDashboard();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -33,6 +41,18 @@ export function DetailPanel() {
       }
     };
   }, [selectedNode?.meta?.nodeId]);
+
+  const contractId =
+    selectedNode?.meta?.type === "contract" ? selectedNode.meta.id : undefined;
+
+  const functionBreakdown = useMemo(
+    () =>
+      buildContractFunctionBreakdown(
+        data?.treemaps.events,
+        contractId ?? "",
+      ),
+    [data?.treemaps.events, data?.period, metric, contractId],
+  );
 
   if (isLoading) {
     return (
@@ -65,6 +85,7 @@ export function DetailPanel() {
           : "This month";
 
   const address = selectedNode.meta?.id;
+  const opsUnitLabel = getMetricUnit("ops").unitLabel;
 
   return (
     <Card className="xl:h-full">
@@ -191,6 +212,96 @@ export function DetailPanel() {
               {selectedNode.meta.eventType}
             </p>
           </div>
+        ) : null}
+
+        {contractId ? (
+          <section
+            aria-labelledby="contract-function-breakdown-heading"
+            className="rounded-lg border border-white/10 bg-black/20 p-3"
+          >
+            <h3
+              id="contract-function-breakdown-heading"
+              className="mb-2 text-xs font-semibold text-zinc-400"
+            >
+              Top Soroban functions
+            </h3>
+            {functionBreakdown.rows.length === 0 ? (
+              <p className="text-sm text-zinc-400" role="status">
+                No host-function breakdown is available for this contract in the
+                current period and metric. Drill the Operation Types treemap for
+                Soroban functions when data is present.
+              </p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[16rem] border-collapse text-left text-sm">
+                  <caption className="sr-only">
+                    Top {functionBreakdown.configuredLimit} Soroban host
+                    functions for this contract, with operation counts and share
+                    of the contract total ({opsUnitLabel}).
+                  </caption>
+                  <thead>
+                    <tr className="border-b border-white/10 text-xs text-zinc-500">
+                      <th scope="col" className="py-1.5 pr-2 font-medium">
+                        Function
+                      </th>
+                      <th scope="col" className="py-1.5 pr-2 font-medium">
+                        Ops ({opsUnitLabel})
+                      </th>
+                      <th scope="col" className="py-1.5 pr-2 font-medium">
+                        Share
+                      </th>
+                      <th scope="col" className="py-1.5 font-medium">
+                        Treemap
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {functionBreakdown.rows.map((row) => (
+                      <tr
+                        key={row.eventType}
+                        className="border-b border-white/5 text-zinc-200"
+                      >
+                        <th
+                          scope="row"
+                          className="py-1.5 pr-2 font-mono text-xs font-normal"
+                        >
+                          {row.functionName}
+                        </th>
+                        <td className="py-1.5 pr-2 tabular-nums">
+                          {formatNumber(row.opCount)}
+                        </td>
+                        <td className="py-1.5 pr-2 tabular-nums">
+                          {formatPercent(row.sharePercent)}
+                        </td>
+                        <td className="py-1.5">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 px-2 text-xs text-stellar-light"
+                            onClick={() => {
+                              setTreemapView("events");
+                              setActiveLevelPath(row.drillPath);
+                              const leaf =
+                                row.drillPath[row.drillPath.length - 1];
+                              setSelectedNode({
+                                name: leaf.name,
+                                value: Number(leaf.value ?? row.opCount),
+                                share:
+                                  leaf.meta?.share ?? row.sharePercent / 100,
+                                meta: leaf.meta,
+                              });
+                            }}
+                          >
+                            Open drill
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
         ) : null}
 
         {selectedNode.meta?.coverage ? (
