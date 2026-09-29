@@ -368,6 +368,19 @@ This endpoint intentionally omits `kpis`, `treemaps`, and `metricProvenance`.
 Use `/api/v1/activity` for dashboard and visualization consumers so entity data
 is not transferred twice.
 
+
+### Rate limiting
+
+Unauthenticated `/api/v1/*` routes are rate-limited per client IP (from `X-Forwarded-For` / `X-Real-IP`). Exceeded limits return `429` with a stable JSON body (`code: RATE_LIMITED`) and a `Retry-After` header.
+
+| Env var | Default | Purpose |
+| --- | --- | --- |
+| `RATE_LIMIT_V1_MAX` | `60` | Max `/api/v1/*` requests per window |
+| `RATE_LIMIT_V1_WINDOW_MS` | `60000` | Window length in milliseconds |
+| `RATE_LIMIT_HEALTH_MAX` | `600` | Higher ceiling for `/api/health` probes |
+| `RATE_LIMIT_HEALTH_WINDOW_MS` | `60000` | Health window length |
+| `RATE_LIMIT_DISABLED` | unset | Set to `true` to disable enforcement locally |
+
 ### Shared error responses
 
 Both versioned activity surfaces use the same validation and safe provider

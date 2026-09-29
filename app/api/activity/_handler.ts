@@ -13,6 +13,7 @@ import {
   startTimer,
 } from "@/lib/log";
 import { isValidPeriod, PERIOD_OPTIONS } from "@/lib/periods";
+import { enforceRateLimit } from "@/lib/rate-limit";
 import {
   ActivityResponseValidationError,
   publicValidationErrorBody,
@@ -112,6 +113,9 @@ export async function handleActivityRequest(
   request: Request,
   fetchActivityData: ActivityFetcher = getActivityData,
 ) {
+  const limited = enforceRateLimit(request, "v1");
+  if (limited) return limited;
+
   const correlationId = createCorrelationId();
   const timer = startTimer();
   const { searchParams } = new URL(request.url);
@@ -245,6 +249,9 @@ export async function handleRawActivityRequest(
   request: Request,
   fetchActivityData: ActivityFetcher = getActivityData,
 ) {
+  const limited = enforceRateLimit(request, "v1");
+  if (limited) return limited;
+
   const { searchParams } = new URL(request.url);
   const parsed = parseActivityPeriod(searchParams.get("period"));
 

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getBigQueryClient, hasBigQueryCredentials } from "@/lib/hubble/client";
 import { getCached } from "@/lib/hubble/cache";
 import { getAllEntities } from "@/lib/entities/registry";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -165,6 +166,9 @@ function checkCache(): CheckResult {
 // ── Handler ────────────────────────────────────────────────────────────────
 
 export async function GET(request: Request) {
+  const limited = enforceRateLimit(request, "health");
+  if (limited) return limited;
+
   const { searchParams } = new URL(request.url);
   const type = searchParams.get("type") ?? "readiness";
 

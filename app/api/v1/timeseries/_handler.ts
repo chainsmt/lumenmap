@@ -11,6 +11,7 @@ import {
   logInfo,
   startTimer,
 } from "@/lib/log";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export type TimeseriesFetcher = (
   period: Period,
@@ -66,6 +67,9 @@ export async function handleTimeseriesRequest(
   request: Request,
   fetchTimeseries: TimeseriesFetcher = getTimeseriesData,
 ) {
+  const limited = enforceRateLimit(request, "v1");
+  if (limited) return limited;
+
   const correlationId = createCorrelationId();
   const timer = startTimer();
   const { searchParams } = new URL(request.url);
