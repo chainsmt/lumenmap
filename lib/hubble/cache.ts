@@ -1,4 +1,6 @@
 import { metrics } from "@/lib/telemetry/metrics";
+import { getCacheDriver } from "@/lib/cache";
+
 export const DEFAULT_CACHE_TTL_SECONDS = 900;
 export const MIN_CACHE_TTL_SECONDS = 1;
 export const MAX_CACHE_TTL_SECONDS = 86_400;
@@ -27,7 +29,6 @@ export function parseCacheTtl(input?: unknown): number {
 
 type Clock = () => number;
 
-const cache = new Map<string, { data: unknown; expires: number }>();
 let now: Clock = () => Date.now();
 
 /** Inject a clock for deterministic cache expiry tests. */
@@ -36,7 +37,7 @@ export function setClock(clock: Clock): void {
 }
 
 export function clearCache(): void {
-  cache.clear();
+  getCacheDriver().clear();
 }
 
 export function getCached<T>(
@@ -45,7 +46,8 @@ export function getCached<T>(
 ): T | null {
   const track = options?.track === true;
   const endpoint = options?.endpoint ?? "activity";
-  const entry = cache.get(key);
+  const driver = getCacheDriver();
+  const entry = driver.get(key);
   if (!entry) {
     if (track) {
       metrics.increment({ endpoint, cache_outcome: "miss" });
@@ -54,7 +56,7 @@ export function getCached<T>(
   }
 
   if (now() > entry.expires) {
-    cache.delete(key);
+    driver.delete(key);
     if (track) {
       metrics.increment({ endpoint, cache_outcome: "miss" });
     }
@@ -76,10 +78,14 @@ export function setCache(
     ttlSeconds ?? process.env.CACHE_TTL_SECONDS,
   );
 
-  cache.set(key, {
-    data,
-    expires: now() + validTtl * 1000,
-  });
+  getCacheDriver().set(
+    key,
+    {
+      data,
+      expires: now() + validTtl * 1000,
+    },
+    validTtl,
+  );
   pruneCache();
 }
 
@@ -89,9 +95,10 @@ export function setCache(
  */
 export function pruneCache(): void {
   const currentTime = now();
-  for (const [key, entry] of cache) {
+  const driver = getCacheDriver();
+  for (const [key, entry] of driver.entries()) {
     if (currentTime > entry.expires) {
-      cache.delete(key);
+      driver.delete(key);
     }
   }
 }
