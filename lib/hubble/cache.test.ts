@@ -1,5 +1,6 @@
 import { test, describe, beforeEach } from "node:test";
 import assert from "node:assert/strict";
+import { resetCacheDriverState } from "@/lib/cache";
 import {
   parseCacheTtl,
   setCache,
@@ -11,6 +12,13 @@ import {
   MIN_CACHE_TTL_SECONDS,
   MAX_CACHE_TTL_SECONDS,
 } from "./cache";
+
+function resetCacheTestState() {
+  process.env.CACHE_BACKEND = "memory";
+  resetCacheDriverState();
+  clearCache();
+  setClock(() => Date.now());
+}
 
 describe("parseCacheTtl", () => {
   test("missing or empty configuration uses default TTL (900s)", () => {
@@ -68,7 +76,7 @@ describe("parseCacheTtl", () => {
 
 describe("in-memory cache behavior", () => {
   beforeEach(() => {
-    clearCache();
+    resetCacheTestState();
   });
 
   test("setCache and getCached store and retrieve data with valid TTL", () => {
@@ -112,8 +120,7 @@ describe("in-memory cache behavior", () => {
 
 describe("proactive expired-entry pruning", () => {
   beforeEach(() => {
-    clearCache();
-    setClock(() => Date.now());
+    resetCacheTestState();
   });
 
   test("setCache prunes expired entries from previous writes", () => {
