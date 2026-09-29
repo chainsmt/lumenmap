@@ -190,6 +190,19 @@ Do not commit `gcp-sa.json` or `.env.local`. Both are gitignored. Each contribut
 
 ## API
 
+### Cache backends
+
+Activity responses use a pluggable cache driver selected by env:
+
+| Env var | Default | Purpose |
+| --- | --- | --- |
+| `CACHE_BACKEND` | `memory` | `memory` (process Map) or `redis` / `kv` (Redis-like driver) |
+| `CACHE_TTL_SECONDS` | `900` | Entry TTL in seconds |
+
+`CACHE_BACKEND=redis` uses a Redis/KV-compatible driver with stable `lumenmap:cache:*` keys. In development, if an external client is unavailable the process falls back to in-memory. Inject a real client via `setRedisClient()` (tests use a shared fake driver to prove cross-instance hits). Hit/miss telemetry from `#97` continues to flow through `getCached(..., { track: true })`.
+
+
+
 ### `GET /api/v1/activity`
 
 Compact visualization-ready activity data used by the dashboard. This response
