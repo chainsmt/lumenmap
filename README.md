@@ -190,6 +190,8 @@ Do not commit `gcp-sa.json` or `.env.local`. Both are gitignored. Each contribut
 
 ## API
 
+Machine-readable OpenAPI 3.1 for the public routes is served at [`/api/openapi.json`](/api/openapi.json). Import it into Swagger Editor to inspect parameters and response shapes aligned with the Zod validators used at runtime.
+
 ### Cache backends
 
 Activity responses use a pluggable cache driver selected by env:
@@ -200,8 +202,6 @@ Activity responses use a pluggable cache driver selected by env:
 | `CACHE_TTL_SECONDS` | `900` | Entry TTL in seconds |
 
 `CACHE_BACKEND=redis` uses a Redis/KV-compatible driver with stable `lumenmap:cache:*` keys. In development, if an external client is unavailable the process falls back to in-memory. Inject a real client via `setRedisClient()` (tests use a shared fake driver to prove cross-instance hits). Hit/miss telemetry from `#97` continues to flow through `getCached(..., { track: true })`.
-
-
 
 ### `GET /api/v1/activity`
 

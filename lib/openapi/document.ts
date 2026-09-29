@@ -1,0 +1,311 @@
+/**
+ * OpenAPI 3.1 description of public LumenMap HTTP routes.
+ * Kept in sync with Zod validators under lib/schemas and route handlers.
+ */
+export const openApiDocument = {
+  openapi: "3.1.0",
+  info: {
+    title: "LumenMap Public API",
+    version: "1.0.0",
+    description:
+      "Machine-readable contracts for visualization activity, timeseries, and health probes. Schemas align with the Zod validators used at the server boundary.",
+    license: { name: "MIT" },
+  },
+  servers: [{ url: "/", description: "Current deployment" }],
+  paths: {
+    "/api/v1/activity": {
+      get: {
+        operationId: "getActivityVisualization",
+        summary: "Compact visualization-ready network activity",
+        parameters: [
+          {
+            name: "period",
+            in: "query",
+            required: false,
+            schema: {
+              type: "string",
+              enum: ["1d", "7d", "30d", "month"],
+              default: "1d",
+            },
+            description: "Aggregation window for Hubble / fixture data.",
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Activity visualization payload",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ActivityVisualizationResponse" },
+                examples: {
+                  fixture: {
+                    summary: "Fixture-mode shape",
+                    value: {
+                      period: "1d",
+                      source: "fixture",
+                      fixture: true,
+                      isPeriodComplete: true,
+                      kpis: {
+                        totalOps: { kind: "operations", unit: "ops", value: 1 },
+                        sorobanShare: {
+                          kind: "share",
+                          unit: "percent",
+                          value: 40,
+                        },
+                        topCategory: "soroban",
+                        activeContracts: {
+                          kind: "entity_count",
+                          unit: "count",
+                          value: 1,
+                        },
+                        activeWallets: {
+                          kind: "entity_count",
+                          unit: "count",
+                          value: 1,
+                        },
+                        activeDestinationAccounts: {
+                          kind: "entity_count",
+                          unit: "count",
+                          value: 1,
+                        },
+                      },
+                      treemaps: {},
+                      metricProvenance: {},
+                    },
+                  },
+                },
+              },
+            },
+          },
+          "400": {
+            description: "Invalid period or data-source configuration",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ApiError" },
+              },
+            },
+          },
+          "429": {
+            description: "Rate limit exceeded",
+            headers: {
+              "Retry-After": {
+                schema: { type: "integer" },
+                description: "Seconds until the client may retry",
+              },
+            },
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/RateLimitError" },
+              },
+            },
+          },
+          "500": {
+            description: "Upstream or validation failure",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ApiError" },
+              },
+            },
+          },
+        },
+      },
+    },
+    "/api/v1/timeseries": {
+      get: {
+        operationId: "getActivityTimeseries",
+        summary: "Bucketed activity timeseries for the selected period",
+        parameters: [
+          {
+            name: "period",
+            in: "query",
+            required: false,
+            schema: {
+              type: "string",
+              enum: ["1d", "7d", "30d", "month"],
+              default: "1d",
+            },
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Timeseries payload",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/TimeseriesResponse" },
+              },
+            },
+          },
+          "400": {
+            description: "Invalid period",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ApiError" },
+              },
+            },
+          },
+          "429": {
+            description: "Rate limit exceeded",
+            headers: {
+              "Retry-After": { schema: { type: "integer" } },
+            },
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/RateLimitError" },
+              },
+            },
+          },
+        },
+      },
+    },
+    "/api/health": {
+      get: {
+        operationId: "getHealth",
+        summary: "Liveness / readiness probe",
+        parameters: [
+          {
+            name: "type",
+            in: "query",
+            required: false,
+            schema: {
+              type: "string",
+              enum: ["liveness", "readiness"],
+              default: "readiness",
+            },
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Healthy or degraded",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/HealthResponse" },
+              },
+            },
+          },
+          "503": {
+            description: "Unavailable",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/HealthResponse" },
+              },
+            },
+          },
+        },
+      },
+    },
+    "/api/openapi.json": {
+      get: {
+        operationId: "getOpenApiDocument",
+        summary: "This OpenAPI 3.1 document",
+        responses: {
+          "200": {
+            description: "OpenAPI document",
+            content: {
+              "application/json": {
+                schema: { type: "object" },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  components: {
+    schemas: {
+      Period: {
+        type: "string",
+        enum: ["1d", "7d", "30d", "month"],
+      },
+      ApiError: {
+        type: "object",
+        required: ["code", "message"],
+        properties: {
+          code: { type: "string" },
+          message: { type: "string" },
+        },
+        additionalProperties: true,
+      },
+      RateLimitError: {
+        type: "object",
+        required: ["code", "message", "retryAfterSeconds"],
+        properties: {
+          code: { type: "string", const: "RATE_LIMITED" },
+          message: { type: "string" },
+          retryAfterSeconds: { type: "integer", minimum: 1 },
+        },
+      },
+      MetricValue: {
+        type: "object",
+        required: ["kind", "unit", "value"],
+        properties: {
+          kind: { type: "string" },
+          unit: { type: "string" },
+          value: { type: "number" },
+        },
+      },
+      ActivityVisualizationResponse: {
+        type: "object",
+        required: [
+          "period",
+          "start",
+          "end",
+          "source",
+          "sourceTimestamp",
+          "isPeriodComplete",
+          "kpis",
+          "treemaps",
+          "metricProvenance",
+        ],
+        properties: {
+          period: { $ref: "#/components/schemas/Period" },
+          start: { type: "string", format: "date-time" },
+          end: { type: "string", format: "date-time" },
+          source: { type: "string", enum: ["hubble", "fixture"] },
+          sourceTimestamp: { type: "string" },
+          isPeriodComplete: { type: "boolean" },
+          fixture: { type: "boolean" },
+          kpis: { type: "object", additionalProperties: true },
+          treemaps: { type: "object", additionalProperties: true },
+          metricProvenance: { type: "object", additionalProperties: true },
+          timeseries: { type: "object", additionalProperties: true },
+          heatmap: { type: "object", additionalProperties: true },
+          protocols: { type: "object", additionalProperties: true },
+          assetVolumes: { type: "array", items: { type: "object" } },
+        },
+        additionalProperties: true,
+      },
+      TimeseriesResponse: {
+        type: "object",
+        required: ["period", "source", "timeseries"],
+        properties: {
+          period: { $ref: "#/components/schemas/Period" },
+          source: { type: "string", enum: ["hubble", "fixture"] },
+          timeseries: {
+            type: "object",
+            properties: {
+              granularity: { type: "string", enum: ["hour", "day"] },
+              buckets: { type: "array", items: { type: "object" } },
+              totals: { type: "object" },
+            },
+            additionalProperties: true,
+          },
+          metricProvenance: { type: "object", additionalProperties: true },
+        },
+        additionalProperties: true,
+      },
+      HealthResponse: {
+        type: "object",
+        required: ["status"],
+        properties: {
+          status: {
+            type: "string",
+            enum: ["ok", "degraded", "unavailable"],
+          },
+          checks: { type: "object", additionalProperties: true },
+        },
+        additionalProperties: true,
+      },
+    },
+  },
+} as const;
+
+export type OpenApiDocument = typeof openApiDocument;
